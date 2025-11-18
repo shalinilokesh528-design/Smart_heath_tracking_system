@@ -1,0 +1,136 @@
+{% extends 'core/base.html' %}
+{% load static %}
+{% block content %}
+
+<style>
+/* 🌈 Background and Layout */
+body {
+    margin: 0;
+    font-family: 'Segoe UI', sans-serif;
+    background: linear-gradient(to right, #e0f7fa, #f1f8e9);
+    color: #333;
+}
+
+/* 📦 Container */
+main {
+    max-width: 700px;
+    margin: auto;
+    padding: 30px;
+    background-color: #ffffffdd;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.05);
+}
+
+/* 🧑‍⚕️ Heading */
+h2 {
+    text-align: center;
+    color: #00796b;
+    margin-bottom: 20px;
+}
+
+/* 🖼 Profile Photo */
+.profile-photo {
+    width: 150px;
+    height: 150px;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 2px solid #ccc;
+    margin-bottom: 10px;
+}
+
+/* 🗑️ Delete Button */
+.delete-btn {
+    background-color: #f44336;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.delete-btn:hover {
+    background-color: #d32f2f;
+}
+
+/* 📤 Upload Button */
+.upload-btn {
+    margin-top: 10px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.upload-btn:hover {
+    background-color: #388e3c;
+}
+
+/* 📝 Form Table */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+table td {
+    padding: 10px;
+    vertical-align: top;
+}
+
+table td:first-child {
+    font-weight: bold;
+    width: 30%;
+}
+</style>
+
+<main>
+  <h2>👨‍⚕️ Welcome, Dr. {{ user.first_name }}</h2>
+
+  {% if user.profile_photo %}
+      <div style="text-align: center;">
+          <img src="{{ user.profile_photo.url }}" alt="Profile Photo" class="profile-photo">
+          <form method="post" action="{% url 'delete_profile_photo' %}">
+              {% csrf_token %}
+              <button type="submit" class="delete-btn">🗑️ Delete Photo</button>
+          </form>
+      </div>
+  {% else %}
+      <p style="text-align: center;">No profile photo uploaded yet.</p>
+  {% endif %}
+
+  <form method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+      <table>
+          <tr>
+              <td>First Name:</td>
+              <td>{{ form.first_name }}</td>
+          </tr>
+          <tr>
+              <td>Last Name:</td>
+              <td>{{ form.last_name }}</td>
+          </tr>
+          <tr>
+              <td>Email:</td>
+              <td>{{ form.email }}</td>
+          </tr>
+          <tr>
+              <td>Phone:</td>
+              <td>{{ form.phone }}</td>
+          </tr>
+          <tr>
+              <td>Role:</td>
+              <td>{{ form.role }}</td>
+          </tr>
+          <tr>
+              <td>Upload New Photo:</td>
+              <td><input type="file" name="profile_photo" accept="image/*"></td>
+          </tr>
+      </table>
+
+      <button type="submit" class="upload-btn">📤 Upload & Save</button>
+  </form>
+</main>
+
+{% endblock %}

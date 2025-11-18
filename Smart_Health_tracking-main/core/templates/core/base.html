@@ -1,0 +1,39 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Smart Health</title>
+    <meta name="csrf-token" content="{{ csrf_token }}">
+</head>
+<body>
+
+    {% if user.is_authenticated and not hide_nav %}
+    <nav>
+        <ul style="list-style: none; display: flex; gap: 15px; padding: 10px;">
+            {% if user.role == 'patient' %}
+                <li><a href="{% url 'patient_home' %}">Home</a></li>
+                <li><a href="{% url 'visit_details' %}">Details</a></li>
+                <li><a href="{% url 'message_box' %}">💬 Messages</a></li>
+                <li><a href="{% url 'patient_profile' %}">Profile</a></li>
+
+            {% elif user.role == 'doctor' %}
+                <li><a href="{% url 'doctor_dashboard' %}">Home</a></li>
+                <li><a href="{% url 'message_box' %}">💬 Messages</a></li>
+                <li><a href="{% url 'doctor_profile' %}">Profile</a></li>
+
+            {% elif user.role == 'therapist' %}
+                <li><a href="{% url 'therapist_dashboard' %}">Home</a></li>
+                <li><a href="{% url 'message_box' %}">💬 Messages</a></li>
+                <li><a href="{% url 'therapist_profile' %}">Profile</a></li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+
+    <main style="padding: 20px;">
+        {% block content %}{% endblock %}
+    </main>
+
+</body>
+</html>

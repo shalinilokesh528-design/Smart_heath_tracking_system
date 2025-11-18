@@ -1,0 +1,238 @@
+{% extends 'core/base.html' %}
+{% block content %}
+<h2>Welcome, {{ user.username }} — Home</h2>
+
+<!-- 🚨 Emergency SOS Section -->
+<div style="margin: 30px 0; padding: 20px; background: linear-gradient(135deg, #ff4444 0%, #cc0000 100%); border-radius: 10px; box-shadow: 0 4px 15px rgba(255, 68, 68, 0.3); text-align: center;">
+    <h3 style="color: white; margin-bottom: 15px;">🚨 Emergency SOS</h3>
+    <p style="color: white; margin-bottom: 20px;">Press the button below to send an emergency alert to all doctors and therapists</p>
+    <form method="post" action="{% url 'send_sos_alert' %}" style="margin-bottom: 15px;">
+        {% csrf_token %}
+        <textarea name="message" placeholder="Optional: Add a message describing your emergency..." style="width: 100%; max-width: 500px; padding: 10px; margin-bottom: 10px; border-radius: 5px; border: none; min-height: 80px; font-size: 14px;"></textarea>
+        <br>
+        <button type="submit" style="background-color: white; color: #cc0000; padding: 15px 40px; font-size: 20px; font-weight: bold; border: none; border-radius: 5px; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.3); transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+            🚨 SEND SOS ALERT
+        </button>
+    </form>
+</div>
+
+<hr>
+
+<!-- 🎥 Exercise Videos Section -->
+<div style="margin: 30px 0; padding: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 10px; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3); text-align: center;">
+    <h3 style="color: white; margin-bottom: 15px;">🎥 Exercise Video Library</h3>
+    <p style="color: white; margin-bottom: 20px;">Watch exercise demonstrations uploaded by your therapists</p>
+    <a href="{% url 'view_exercise_videos' %}" style="display: inline-block; background-color: white; color: #667eea; padding: 15px 40px; font-size: 18px; font-weight: bold; border: none; border-radius: 5px; cursor: pointer; text-decoration: none; box-shadow: 0 4px 10px rgba(0,0,0,0.3); transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+        🎬 Browse Exercise Videos
+    </a>
+</div>
+
+<hr>
+
+<!-- Active Task Section -->
+{% if active_task %}
+    <h3>⏱️ Active Task</h3>
+    <p><strong>Task:</strong> {{ active_task.task_name }}</p>
+    <p><strong>Started at:</strong> {{ active_task.started_at|date:"d M Y, H:i:s" }}</p>
+    <p><strong>Duration:</strong> {{ active_task.duration_minutes }} min</p>
+
+    <div id="timerSection" style="margin-top:20px;">
+        <h4>⏱️ Stopwatch</h4>
+        <p id="stopwatchDisplay" style="font-size:24px;"></p>
+    </div>
+
+    <form method="post" action="{% url 'complete_task' active_task.id %}">
+        {% csrf_token %}
+        <button type="submit">Complete Task</button>
+    </form>
+
+    {% if active_task.started_at and active_task.duration_minutes %}
+    <script>
+    function startPersistentStopwatch(startTime, durationMinutes) {
+        const display = document.getElementById("stopwatchDisplay");
+        const startedAt = new Date(startTime);
+        const endAt = new Date(startedAt.getTime() + durationMinutes * 60000);
+
+        const interval = setInterval(() => {
+            const now = new Date();
+            const elapsedMs = now - startedAt;
+            const remainingMs = endAt - now;
+
+            if (remainingMs <= 0) {
+                clearInterval(interval);
+                display.textContent = "✅ Task duration reached!";
+                return;
+            }
+
+            const elapsedSec = Math.floor(elapsedMs / 1000);
+            const m = Math.floor(elapsedSec / 60);
+            const s = elapsedSec % 60;
+            display.textContent = `${m}m ${s}s elapsed`;
+        }, 1000);
+    }
+
+    const startedAt = "{{ active_task.started_at|date:'Y-m-d H:i:s' }}";
+    const duration = {{ active_task.duration_minutes|default:0 }};
+    startPersistentStopwatch(startedAt, duration);
+    </script>
+    {% endif %}
+
+{% else %}
+    <!-- Start New Task Section -->
+    <h3>Start a New Task</h3>
+    <form method="post" id="taskForm" action="{% url 'start_task' %}">
+        {% csrf_token %}
+        <label for="id_task_type">Task Type:</label>
+        {{ form.task_type }}
+
+        <label for="id_duration_minutes">Duration (minutes):</label>
+        {{ form.duration_minutes }}
+
+        <button type="button" onclick="startCountdown()">Start Task</button>
+    </form>
+
+    <div id="countdownSection" style="display:none; margin-top:20px;">
+        <h4>⏳ Starting in...</h4>
+        <p id="countdownDisplay" style="font-size:24px;"></p>
+    </div>
+
+    <div id="timerSection" style="display:none; margin-top:20px;">
+        <h4>⏱️ Stopwatch</h4>
+        <p id="stopwatchDisplay" style="font-size:24px;"></p>
+    </div>
+
+    <script>
+    function startCountdown() {
+        const taskTypeInput = document.getElementById("id_task_type");
+        const durationInput = document.getElementById("id_duration_minutes");
+
+        const taskType = taskTypeInput.value;
+        const duration = parseInt(durationInput.value);
+
+        if (!taskType || isNaN(duration) || duration <= 0) {
+            alert("Please select a task type and enter a valid duration.");
+            return;
+        }
+
+        document.getElementById("countdownSection").style.display = "block";
+        const countdownDisplay = document.getElementById("countdownDisplay");
+        let countdown = 3;
+
+        const countdownInterval = setInterval(() => {
+            if (countdown === 0) {
+                clearInterval(countdownInterval);
+                countdownDisplay.textContent = "GO!";
+                setTimeout(() => {
+                    document.getElementById("countdownSection").style.display = "none";
+                    startStopwatch(duration);
+                }, 1000);
+            } else {
+                countdownDisplay.textContent = countdown;
+                countdown--;
+            }
+        }, 1000);
+    }
+
+    function startStopwatch(durationMinutes) {
+        document.getElementById("timerSection").style.display = "block";
+        const stopwatchDisplay = document.getElementById("stopwatchDisplay");
+
+        let elapsedSeconds = 0;
+        const totalSeconds = durationMinutes * 60;
+
+        const stopwatchInterval = setInterval(() => {
+            const minutes = Math.floor(elapsedSeconds / 60);
+            const seconds = elapsedSeconds % 60;
+            stopwatchDisplay.textContent = `${minutes}m ${seconds}s`;
+            elapsedSeconds++;
+
+            if (elapsedSeconds > totalSeconds) {
+                clearInterval(stopwatchInterval);
+                stopwatchDisplay.textContent = "✅ Task completed!";
+                setTimeout(() => {
+                    document.getElementById("taskForm").submit();
+                }, 1000);
+            }
+        }, 1000);
+    }
+    </script>
+{% endif %}
+
+<!-- 🗓️ Appointment Booking Section -->
+<!-- 🗓️ Appointment Booking Section -->
+<hr>
+<h3>🗓️ Make an Appointment</h3>
+<form method="post" action="{% url 'patient_home' %}">
+    {% csrf_token %}
+    {{ appointment_form.as_p }}
+    <button type="submit">Request Appointment</button>
+</form>
+<hr>
+<h3>📋 Check Appointment Status</h3>
+<button onclick="toggleAppointmentStatus()">Show Appointment Details</button>
+
+<div id="appointmentStatus" style="display:none; margin-top:15px;">
+    {% if latest_appointment %}
+        <p><strong>Doctor:</strong> {{ latest_appointment.doctor.get_full_name }}</p>
+        <p><strong>Location:</strong> {{ latest_appointment.location.name }}</p>
+        <p><strong>Hospital:</strong> {{ latest_appointment.hospital.name }}</p>
+        <p><strong>Date:</strong> {{ latest_appointment.date }}</p>
+        <p><strong>Time:</strong> {{ latest_appointment.time }}</p>
+        <p><strong>Reason:</strong> {{ latest_appointment.reason }}</p>
+      <p><strong>Status:</strong>
+    {% if latest_appointment.status == 'confirmed' %}
+        ✅ Confirmed
+    {% elif latest_appointment.status == 'completed' %}
+        ✅ Completed
+    {% elif latest_appointment.status == 'cancelled' %}
+        ❌ Cancelled
+    {% else %}
+        ⏳ Pending
+    {% endif %}
+</p>
+
+    {% else %}
+        <p>No appointment found.</p>
+    {% endif %}
+</div>
+
+<script>
+function toggleAppointmentStatus() {
+    const section = document.getElementById("appointmentStatus");
+    section.style.display = section.style.display === "none" ? "block" : "none";
+}
+</script>
+
+
+{% if messages %}
+    <ul class="messages">
+        {% for message in messages %}
+            <li>{{ message }}</li>
+        {% endfor %}
+    </ul>
+{% endif %}
+
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $("#id_location").change(function () {
+        var url = "{% url 'ajax_load_hospitals' %}";
+        var locationId = $(this).val();
+
+        $.ajax({
+            url: url,
+            data: {
+                'location': locationId
+            },
+            success: function (data) {
+                $("#id_hospital").html("");
+                $.each(data, function (index, hospital) {
+                    $("#id_hospital").append('<option value="' + hospital.id + '">' + hospital.name + '</option>');
+                });
+            }
+        });
+    });
+</script>
+
+
+{% endblock %}

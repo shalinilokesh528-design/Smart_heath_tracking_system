@@ -1,0 +1,225 @@
+{% extends 'core/base.html' %}
+{% block content %}
+<!-- 🔐 CSRF token for JavaScript -->
+<meta name="csrf-token" content="{{ csrf_token }}">
+
+<style>
+/* 🌈 Background and Layout */
+body {
+    margin: 0;
+    font-family: 'Segoe UI', sans-serif;
+    background: linear-gradient(to right, #e0f7fa, #f1f8e9);
+    color: #333;
+}
+
+/* 🧩 Chat Container */
+.chat-container {
+    display: flex;
+    border: 1px solid #ccc;
+    height: 500px;
+    max-width: 1000px;
+    margin: auto;
+    background-color: #ffffffdd;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.05);
+    overflow: hidden;
+}
+
+/* 🔹 Left Panel */
+.role-list {
+    width: 30%;
+    border-right: 1px solid #ccc;
+    padding: 15px;
+    overflow-y: auto;
+    background-color: #f9f9f9;
+}
+
+.role-list h4 {
+    margin-bottom: 10px;
+    color: #00796b;
+}
+
+.role-list ul {
+    list-style: none;
+    padding-left: 0;
+}
+
+.role-list li {
+    margin-bottom: 8px;
+}
+
+.role-list a {
+    text-decoration: none;
+    color: #00796b;
+    font-weight: bold;
+}
+
+.role-list a:hover {
+    text-decoration: underline;
+}
+
+/* 🔸 Right Panel */
+.chat-window {
+    width: 70%;
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+}
+
+.chat-window h4 {
+    margin-bottom: 10px;
+    color: #00796b;
+}
+
+/* 💬 Message List */
+.message-list {
+    flex: 1;
+    overflow-y: auto;
+    margin-bottom: 10px;
+    padding-right: 10px;
+}
+
+.message {
+    margin: 5px 0;
+    padding: 8px 12px;
+    border-radius: 8px;
+    max-width: 70%;
+    word-wrap: break-word;
+    position: relative;
+}
+
+.sent {
+    background-color: #dcf8c6;
+    align-self: flex-end;
+}
+
+.received {
+    background-color: #f1f0f0;
+    align-self: flex-start;
+}
+
+/* 🗑️ Delete Button */
+.message button {
+    background: none;
+    border: none;
+    color: #888;
+    font-size: 14px;
+    margin-left: 10px;
+    cursor: pointer;
+}
+
+.message button:hover {
+    color: #d32f2f;
+}
+
+/* 📝 Message Form */
+#messageForm {
+    display: flex;
+    gap: 10px;
+}
+
+#messageForm input[type="text"] {
+    flex: 1;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+#messageForm button {
+    background-color: #00796b;
+    color: white;
+    padding: 8px 14px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+#messageForm button:hover {
+    background-color: #004d40;
+}
+</style>
+
+<div class="chat-container">
+  <!-- 🔹 Left Panel: Role & User Selection -->
+  <div class="role-list">
+    <h4>Choose Role</h4>
+    <ul>
+      {% for role in roles %}
+        <li><a href="?role={{ role }}">{{ role|title }}</a></li>
+      {% endfor %}
+    </ul>
+
+    {% if selected_role %}
+      <hr>
+      <h4>{{ selected_role|title }}s</h4>
+      <ul>
+        {% for user in users %}
+          <li><a href="?role={{ selected_role }}&user={{ user.id }}">{{ user.first_name }}</a></li>
+        {% empty %}
+          <li>No users found.</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+  </div>
+
+  <!-- 🔹 Right Panel: Chat Window -->
+  <div class="chat-window">
+    {% if selected_user %}
+      <h4>Chat with {{ selected_user.first_name }}</h4>
+      <div class="message-list" id="messageList">
+        {% for msg in messages %}
+          <div class="message {% if msg.sender == request.user %}sent{% else %}received{% endif %}">
+            {{ msg.content }}
+            {% if msg.sender == request.user %}
+              <button onclick="deleteMessage({{ msg.id }})">🗑️</button>
+            {% endif %}
+          </div>
+        {% endfor %}
+      </div>
+      <form id="messageForm">
+        {% csrf_token %}
+        <input type="hidden" name="receiver_id" value="{{ selected_user.id }}">
+        <input type="text" name="content" placeholder="Type a message..." required>
+        <button type="submit">Send</button>
+      </form>
+    {% else %}
+      <p>Select a role and user to start chatting.</p>
+    {% endif %}
+  </div>
+</div>
+
+<script>
+// 🔐 Get CSRF token from meta tag
+function getCSRFToken() {
+  return document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+}
+
+// ✅ Send message via AJAX
+document.getElementById('messageForm')?.addEventListener('submit', function(e) {
+  e.preventDefault();
+  const formData = new FormData(this);
+
+  fetch("{% url 'send_message' %}", {
+    method: 'POST',
+    headers: {
+      'X-CSRFToken': getCSRFToken()
+    },
+    body: formData
+  }).then(res => res.json()).then(data => {
+    if (data.status === 'success') location.reload();
+  });
+});
+
+// ✅ Delete message via AJAX
+function deleteMessage(id) {
+  fetch(`/delete-message/${id}/`, {
+    method: 'GET',
+    headers: {
+      'X-CSRFToken': getCSRFToken()
+    }
+  }).then(res => res.json()).then(data => {
+    if (data.status === 'deleted') location.reload();
+  });
+}
+</script>
+{% endblock %}

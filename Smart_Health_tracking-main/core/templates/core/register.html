@@ -1,0 +1,121 @@
+{% extends 'core/base.html' %}
+{% block content %}
+
+<style>
+/* 🌈 Background and Layout */
+body {
+    margin: 0;
+    font-family: 'Segoe UI', sans-serif;
+    background: linear-gradient(to right, #e0f7fa, #f1f8e9);
+    color: #333;
+}
+
+/* 📦 Container */
+main {
+    max-width: 600px;
+    margin: auto;
+    padding: 30px;
+    background-color: #ffffffdd;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.05);
+}
+
+/* 📝 Form Styling */
+form {
+    display: flex;
+    flex-direction: column;
+}
+
+form label {
+    font-weight: bold;
+    margin-top: 10px;
+}
+
+form input,
+form select {
+    padding: 8px;
+    margin-top: 5px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+form button {
+    margin-top: 20px;
+    background-color: #00796b;
+    color: white;
+    padding: 10px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+form button:hover {
+    background-color: #004d40;
+}
+
+/* 🔴 Error Messages */
+ul {
+    padding-left: 20px;
+    margin-bottom: 20px;
+}
+
+ul li {
+    color: red;
+    font-size: 14px;
+}
+
+/* 🔗 Login Link */
+p a {
+    color: #00796b;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+p a:hover {
+    text-decoration: underline;
+}
+</style>
+
+<h2 style="text-align: center;">Register</h2>
+
+{% if form.errors %}
+  <ul>
+    {% for field in form %}
+      {% for error in field.errors %}
+        <li><strong>{{ field.label }}:</strong> {{ error }}</li>
+      {% endfor %}
+    {% endfor %}
+    {% for error in form.non_field_errors %}
+      <li>{{ error }}</li>
+    {% endfor %}
+  </ul>
+{% endif %}
+
+<form method="post">
+    {% csrf_token %}
+    <label>Username:</label>
+    {{ form.username }}
+
+    <label>Email:</label>
+    {{ form.email }}
+
+    <label>Phone Number:</label>
+    {{ form.phone }}
+
+    <label>Register as:</label>
+    {{ form.role }}
+
+    <label>Password:</label>
+    {{ form.password1 }}
+
+    <label>Confirm Password:</label>
+    {{ form.password2 }}
+
+    <button type="submit">Register</button>
+</form>
+
+<p style="text-align: center; margin-top: 20px;">
+  Already have an account? <a href="{% url 'login' %}">Log in</a>
+</p>
+
+{% endblock %}

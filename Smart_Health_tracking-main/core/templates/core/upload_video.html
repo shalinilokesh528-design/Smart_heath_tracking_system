@@ -1,0 +1,147 @@
+{% extends 'core/base.html' %}
+{% block content %}
+
+<style>
+    .form-container {
+        max-width: 800px;
+        margin: 30px auto;
+        padding: 30px;
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    .form-group {
+        margin-bottom: 20px;
+    }
+    label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: bold;
+        color: #333;
+    }
+    input[type="text"], input[type="number"], textarea, select {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        font-size: 14px;
+    }
+    textarea {
+        resize: vertical;
+    }
+    .btn-primary {
+        background-color: #00796b;
+        color: white;
+        padding: 12px 30px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 16px;
+        font-weight: bold;
+    }
+    .btn-primary:hover {
+        background-color: #004d40;
+    }
+    .btn-secondary {
+        background-color: #6c757d;
+        color: white;
+        padding: 12px 30px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-block;
+        margin-left: 10px;
+    }
+</style>
+
+<div class="form-container">
+    <h2>📹 Upload Exercise Video</h2>
+    <p>Upload a video demonstration for your patients to follow along with exercises.</p>
+    
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        
+        <div class="form-group">
+            <label for="id_title">{{ form.title.label }}</label>
+            {{ form.title }}
+            {% if form.title.errors %}
+                <div style="color: red; font-size: 12px;">{{ form.title.errors }}</div>
+            {% endif %}
+        </div>
+        
+        <div class="form-group">
+            <label for="id_description">{{ form.description.label }}</label>
+            {{ form.description }}
+            {% if form.description.errors %}
+                <div style="color: red; font-size: 12px;">{{ form.description.errors }}</div>
+            {% endif %}
+        </div>
+        
+        <div class="form-group">
+            <label for="id_exercise_type">{{ form.exercise_type.label }}</label>
+            {{ form.exercise_type }}
+            {% if form.exercise_type.errors %}
+                <div style="color: red; font-size: 12px;">{{ form.exercise_type.errors }}</div>
+            {% endif %}
+        </div>
+        
+        <div class="form-group">
+            <label for="id_video_file">{{ form.video_file.label }} *</label>
+            {{ form.video_file }}
+            <small style="color: #666;">Accepted formats: MP4, AVI, MOV, WebM</small>
+            {% if form.video_file.errors %}
+                <div style="color: red; font-size: 12px;">{{ form.video_file.errors }}</div>
+            {% endif %}
+        </div>
+        
+        <div class="form-group">
+            <label for="id_thumbnail">{{ form.thumbnail.label }}</label>
+            {{ form.thumbnail }}
+            <small style="color: #666;">Optional: Upload a thumbnail image for the video</small>
+            {% if form.thumbnail.errors %}
+                <div style="color: red; font-size: 12px;">{{ form.thumbnail.errors }}</div>
+            {% endif %}
+        </div>
+        
+        <div class="form-group">
+            <label for="id_duration_minutes">{{ form.duration_minutes.label }}</label>
+            {{ form.duration_minutes }}
+            {% if form.duration_minutes.errors %}
+                <div style="color: red; font-size: 12px;">{{ form.duration_minutes.errors }}</div>
+            {% endif %}
+        </div>
+        
+        <div class="form-group">
+            <label for="id_difficulty_level">{{ form.difficulty_level.label }}</label>
+            {{ form.difficulty_level }}
+            {% if form.difficulty_level.errors %}
+                <div style="color: red; font-size: 12px;">{{ form.difficulty_level.errors }}</div>
+            {% endif %}
+        </div>
+        
+        <div class="form-group">
+            <label style="display: inline-flex; align-items: center;">
+                {{ form.is_active }}
+                <span style="margin-left: 10px;">{{ form.is_active.label }}</span>
+            </label>
+            {% if form.is_active.errors %}
+                <div style="color: red; font-size: 12px;">{{ form.is_active.errors }}</div>
+            {% endif %}
+        </div>
+        
+        <button type="submit" class="btn-primary">📤 Upload Video</button>
+        <a href="{% url 'therapist_videos' %}" class="btn-secondary">Cancel</a>
+    </form>
+</div>
+
+{% if messages %}
+    <ul class="messages" style="max-width: 800px; margin: 20px auto;">
+        {% for message in messages %}
+            <li style="padding: 10px; background: #d4edda; color: #155724; border-radius: 5px; margin-bottom: 10px;">{{ message }}</li>
+        {% endfor %}
+    </ul>
+{% endif %}
+
+{% endblock %}
+

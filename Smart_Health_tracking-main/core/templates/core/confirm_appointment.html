@@ -1,0 +1,73 @@
+{% extends 'core/base.html' %}
+{% block content %}
+
+<style>
+/* 🌈 Background and Layout */
+body {
+    margin: 0;
+    font-family: 'Segoe UI', sans-serif;
+    background: linear-gradient(to right, #e0f7fa, #f1f8e9);
+    color: #333;
+}
+
+/* 📦 Container */
+main {
+    max-width: 600px;
+    margin: auto;
+    padding: 30px;
+    background-color: #ffffffdd;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.05);
+}
+
+/* ✅ Confirmation Box */
+.confirm-box {
+    border: 1px solid #ccc;
+    padding: 20px;
+    margin-top: 20px;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+}
+
+.confirm-box p {
+    margin: 10px 0;
+    font-size: 16px;
+}
+
+.confirm-box span {
+    font-weight: bold;
+    color: green;
+}
+
+/* 🔙 Back Button */
+a.btn-primary {
+    display: inline-block;
+    margin-top: 20px;
+    background-color: #00796b;
+    color: white;
+    padding: 10px 16px;
+    border-radius: 4px;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+a.btn-primary:hover {
+    background-color: #004d40;
+}
+</style>
+
+<main>
+  <h2 style="text-align: center;">✅ Appointment Confirmed</h2>
+
+  <div class="confirm-box">
+      <p><strong>Patient:</strong> {{ appointment.patient.get_full_name }}</p>
+      <p><strong>Date:</strong> {{ appointment.date }}</p>
+      <p><strong>Time:</strong> {{ appointment.time }}</p>
+      <p><strong>Reason:</strong> {{ appointment.reason }}</p>
+      <p><strong>Status:</strong> <span>Confirmed</span></p>
+  </div>
+
+  <a href="{% url 'doctor_dashboard' %}" class="btn btn-primary">🔙 Back to Dashboard</a>
+</main>
+
+{% endblock %}
